@@ -1,3 +1,4 @@
+import { UpdateUserDto } from './dto/update-user.dto'
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
@@ -8,7 +9,7 @@ import { JWT_SECRET } from '@app/config'
 import { UserResponseInterface } from './types/userResponse.interface'
 import { LoginDto } from './dto/login.dto'
 import { compare } from 'bcrypt'
-
+import { hash } from 'bcrypt'
 @Injectable()
 export class UserService {
 	constructor(
@@ -83,5 +84,15 @@ export class UserService {
 			},
 			JWT_SECRET
 		)
+	}
+	async updateUser(userId: number, dto: UpdateUserDto): Promise<UserEntity> {
+		if (dto.password) {
+			dto.password = await hash(dto.password, 10)
+		}
+		const user = await this.findById(userId)
+		Object.assign(user, dto)
+		const updatedUser = await this.userRepository.save(user)
+		delete updatedUser.password
+		return updatedUser
 	}
 }
