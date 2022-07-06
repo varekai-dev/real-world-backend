@@ -1,11 +1,9 @@
 import { UserEntity } from '@app/user/user.entity'
 import {
-	BeforeUpdate,
 	Column,
 	CreateDateColumn,
 	Entity,
 	ManyToOne,
-	OneToMany,
 	PrimaryGeneratedColumn,
 	UpdateDateColumn,
 } from 'typeorm'
@@ -18,7 +16,7 @@ export class ArticleEntity {
 	@Column()
 	slug: string
 
-	@Column()
+	@Column({ unique: true })
 	title: string
 
 	@Column({ default: '' })
@@ -39,6 +37,6 @@ export class ArticleEntity {
 	@UpdateDateColumn()
 	updatedAt: Date
 
-	@ManyToOne(() => UserEntity, (user) => user.articles)
+	@ManyToOne(() => UserEntity, (user) => user.articles, { eager: true })
 	author: UserEntity
 }
