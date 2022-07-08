@@ -8,6 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import ormconfig from '@app/ormconfig'
 import { UserModule } from './user/user.module'
 import { ArticleModule } from './article/article.module'
+import { ProfileModule } from './profile/profile.module'
 
 @Module({
 	imports: [
@@ -15,6 +16,7 @@ import { ArticleModule } from './article/article.module'
 		TagModule,
 		UserModule,
 		ArticleModule,
+		ProfileModule,
 	],
 	controllers: [AppController],
 	providers: [AppService, ConfigService],
