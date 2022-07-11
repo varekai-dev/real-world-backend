@@ -1,3 +1,4 @@
+import { FollowEntity } from './../profile/follow.entity'
 import { UpdateArticleDto } from './dto/updateArticle.dto'
 import { ArticleResponseInterface } from './types/articleResponse.interface'
 import { UserEntity } from '@app/user/user.entity'
@@ -15,7 +16,9 @@ export class ArticleService {
 		@InjectRepository(ArticleEntity)
 		private readonly articleRepository: Repository<ArticleEntity>,
 		@InjectRepository(UserEntity)
-		private readonly userRepository: Repository<UserEntity>
+		private readonly userRepository: Repository<UserEntity>,
+		@InjectRepository(FollowEntity)
+		private readonly FollowRepository: Repository<FollowEntity>
 	) {}
 
 	async findAll(
@@ -220,5 +223,35 @@ export class ArticleService {
 		}
 
 		return article
+	}
+
+	async getFeed(
+		currentUserId: number,
+		query: any
+	): Promise<ArticlesResponseInterface> {
+		const follows = await this.FollowRepository.find({
+			followerId: currentUserId,
+		})
+		if (follows.length === 0) {
+			return { articles: [], articlesCount: 0 }
+		}
+
+		const followingsUserIds = follows.map((follow) => follow.followingId)
+		const queryBuilder =
+			getRepository(ArticleEntity).createQueryBuilder('articles')
+		queryBuilder.where('articles.authorId IN (:...ids)', {
+			ids: followingsUserIds,
+		})
+		queryBuilder.orderBy('articles.createdAt', 'DESC')
+		if (query.limit) {
+			queryBuilder.limit(query.limit)
+		}
+		if (query.offset) {
+			queryBuilder.offset(query.offset)
+		}
+
+		const articles = await queryBuilder.getMany()
+		const articlesCount = await queryBuilder.getCount()
+		return { articles, articlesCount }
 	}
 }
